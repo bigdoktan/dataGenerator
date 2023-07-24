@@ -11,7 +11,7 @@ os.makedirs(output_directory, exist_ok=True)
 # Read the pii.csv file and load it into the DataFrame
 df = pd.read_csv('pii.csv')
 
-# Divide the DataFrame into parts
+# Divide it into parts
 num_parts = 6
 dfs = np.array_split(df, num_parts)
 
