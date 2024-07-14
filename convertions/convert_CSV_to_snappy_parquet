@@ -1,0 +1,43 @@
+import sys
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+import math
+
+def convert_csv_to_parquet(csv_file, output_dir, num_parts):
+    # Load the CSV into a pandas DataFrame
+    df = pd.read_csv(csv_file)
+
+    # Calculate the number of rows per partition
+    total_rows = len(df)
+    rows_per_part = math.ceil(total_rows / num_parts)
+
+    # Create the output directory if it doesn't exist
+    import os
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Convert DataFrame to a pyarrow Table
+    table = pa.Table.from_pandas(df)
+
+    # Write the parquet files in parts
+    for part in range(num_parts):
+        start_idx = part * rows_per_part
+        end_idx = min((part + 1) * rows_per_part, total_rows)
+        output_file = os.path.join(output_dir, f"part_{part + 1}_snappy.parquet")
+
+        # Slice the table and write to parquet
+        part_table = table.slice(start_idx, end_idx)
+        pq.write_table(part_table, output_file, compression='snappy')
+
+    print(f"CSV file '{csv_file}' converted to {num_parts} parts of Snappy-compressed Parquet files in '{output_dir}'.")
+
+if __name__ == "__main__":
+
+    #csv_file = "/Users/doroktan/git/dataGenerator/data generation script/pii.csv"  # Replace with the path to your CSV file
+    csv_file = input("Enter the full path to the file:\n")  # Replace with the path to your CSV file
+    #csv_file = (sys.argv[1])
+    print(f"that's my file : {csv_file}")
+    output_dir = "output_directory"  # Replace with the desired output directory
+    num_parts = 5  # Replace with the desired number of parts
+
+    convert_csv_to_parquet(csv_file, output_dir, num_parts)
